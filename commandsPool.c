@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "commands/PwdCommand.h"
+#include "commands/LsCommand.h"
+#include "commands/CdCommand.h"
 
 
 #define maxCommandsLen 10
@@ -22,6 +24,8 @@ void registerCommand(Command *command) {
 
 void initCommandsPool() {
     registerCommand(&cmd_pwd);
+    registerCommand(&cmd_ls);
+    registerCommand(&cmd_cd);
 }
 
 void printCommandsList() {
