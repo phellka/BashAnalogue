@@ -77,7 +77,7 @@ void initCommandManager() {
 }
 
 void printPromt() {
-    printf("\033[0;32m>%s: \033[0m", getCurrentDir());
+    printf("\033[1;34m>%s: \033[0m", getCurrentDir());
 }
 
 void runShelll() {
