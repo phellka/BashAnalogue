@@ -10,7 +10,7 @@
 #define MAX_INPUT 256
 #define MAX_ARGS 10
 
-static void parse_arguments(const char *input, char *argv[MAX_ARGS], int *argc) {
+static void parseArguments(const char *input, char *argv[MAX_ARGS], int *argc) {
     *argc = 0;
     const char *p = input;
     char buffer[1024];
@@ -19,6 +19,7 @@ static void parse_arguments(const char *input, char *argv[MAX_ARGS], int *argc) 
 
     while (*p) {
         if (*p == '\\' && *(p + 1) == ' ') {
+            in_arg = 1;
             buffer[buf_idx++] = ' ';
             p += 2;
         } else if (isspace((unsigned char)*p)) {
@@ -54,7 +55,7 @@ static int processInput(char *input) {
     }
     char *argv[MAX_ARGS];
     int argc = 0;
-    parse_arguments(input, argv, &argc);
+    parseArguments(input, argv, &argc);
 
 
     Command* command = findCommand(argv[0]);
