@@ -4,6 +4,7 @@
 #include "commands/PwdCommand.h"
 #include "commands/LsCommand.h"
 #include "commands/CdCommand.h"
+#include "commands/GrepCommand.h"
 
 
 #define maxCommandsLen 10
@@ -26,6 +27,7 @@ void initCommandsPool() {
     registerCommand(&cmd_pwd);
     registerCommand(&cmd_ls);
     registerCommand(&cmd_cd);
+    registerCommand(&cmd_grep);
 }
 
 void printCommandsList() {

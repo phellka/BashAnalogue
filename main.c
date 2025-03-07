@@ -6,5 +6,5 @@
 int main() {
     initCommandManager();
     runShelll();
-    return 1;
+    return 0;
 }
