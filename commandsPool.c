@@ -6,6 +6,7 @@
 #include "commands/CdCommand.h"
 #include "commands/GrepCommand.h"
 #include "commands/PingCommand.h"
+#include "commands/CpCommand.h"
 
 
 #define maxCommandsLen 10
@@ -30,6 +31,7 @@ void initCommandsPool() {
     registerCommand(&cmd_cd);
     registerCommand(&cmd_grep);
     registerCommand(&cmd_ping);
+    registerCommand(&cmd_cp);
 }
 
 void printCommandsList() {
