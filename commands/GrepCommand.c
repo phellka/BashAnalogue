@@ -23,11 +23,17 @@ static void exec(int argc, char **argv) {
         return;
     }
     char line[BUFFER_SIZE];
+    int pattern_len = strlen(argv[1]);
     while (fgets(line, sizeof(line), file)) {
         if (strstr(line, argv[1])) {
-            printf("%s", line);
-            if (line[strlen(line) - 1] != '\n') {
-                printf("\n");
+            char *pos = strstr(line, argv[1]);
+            if (pos) {
+                fwrite(line, 1, pos - line, stdout);
+                printf("\033[1;33m%.*s\033[0m", pattern_len, pos);
+                printf("%s", pos + pattern_len);
+                if (line[strlen(line) - 1] != '\n') {
+                    printf("\n");
+                }
             }
         }
     }

@@ -6,8 +6,6 @@
 #include <sys/stat.h>
 #include "../shellState.h"
 
-#define BLUE "\033[1;34m"
-#define RESET "\033[0m"
 
 static int compareNames(const void *a, const void *b) {
     return strcasecmp(*(const char **)a, *(const char **)b);
