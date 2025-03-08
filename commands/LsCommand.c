@@ -3,7 +3,15 @@
 #include <string.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include "../shellState.h"
+
+#define BLUE "\033[1;34m"
+#define RESET "\033[0m"
+
+static int compareNames(const void *a, const void *b) {
+    return strcasecmp(*(const char **)a, *(const char **)b);
+}
 
 static void help() {
     printf("ls: ls [ФАЙЛ]…\n Выдаёт информацию о ФАЙЛАХ (по умолчанию о текущем каталоге).\n");
@@ -29,19 +37,45 @@ static void listDirectory(const char *dirPath) {
         return;
     }
 
+    char **names = NULL;
+    size_t count = 0;
+
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
-        if (entry->d_type == DT_DIR) {
-            printf("\033[1;34m%s/\033[0m\n", entry->d_name);
+        names = realloc(names, (count + 1) * sizeof(char *));
+        if (!names) {
+            perror("Ошибка выделения памяти");
+            closedir(dir);
+            return;
         }
-        else {
-            printf("%s\n", entry->d_name);
+        names[count] = strdup(entry->d_name);
+        if (!names[count]) {
+            perror("Ошибка выделения памяти");
+            closedir(dir);
+            return;
         }
+        count++;
     }
 
     closedir(dir);
+
+    qsort(names, count, sizeof(char *), compareNames);
+
+    for (size_t i = 0; i < count; i++) {
+        char fullPath[1024];
+        snprintf(fullPath, sizeof(fullPath), "%s/%s", dirPath, names[i]);
+        struct stat pathStat;
+        if (stat(fullPath, &pathStat) == 0 && S_ISDIR(pathStat.st_mode)) {
+            printf("\033[1;34m%s/\033[0m\n", names[i]);
+        } else {
+            printf("%s\n", names[i]);
+        }
+        free(names[i]);
+    }
+
+    free(names);
 }
 
 static void exec(int argc, char **argv) {
