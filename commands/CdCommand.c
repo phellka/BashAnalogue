@@ -4,7 +4,7 @@
 #include "../shellState.h"
 
 static void help() {
-    printf("cd: cd [каталог]\n      Change the current directory to DIR.  The default DIR is the value of the HOME shell variable.\n");
+    printf("cd: cd DIR\n      Change the current directory to DIR.  The default DIR is the value of the HOME shell variable.\n");
 }
 
 static void exec(int argc, char **argv) {

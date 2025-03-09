@@ -5,7 +5,7 @@
 #define BUFFER_SIZE 1024
 
 static void help() {
-    printf("grep: grep ШАБЛОН [ФАЙЛ]…\n     Поиск ШАБЛОНА в ФАЙЛЕ.\n");
+    printf("grep: grep PATTERN FILE\n      Searches for PATTERN in FILE.\n");
 }
 
 static void exec(int argc, char **argv) {
@@ -14,12 +14,12 @@ static void exec(int argc, char **argv) {
         return;
     }
     if (argc < 3) {
-        printf("Неправильные параметры, --help для справки\n");
+        printf("Invalid parameters, use --help for more information\n");
         return;
     }
     FILE *file = fopen(argv[2], "r");
     if (file == NULL) {
-        perror("Ошибка открытия файла");
+        perror("Error opening file");
         return;
     }
     char line[BUFFER_SIZE];

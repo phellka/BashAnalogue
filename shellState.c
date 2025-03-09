@@ -9,7 +9,7 @@ static char initialDir[MAX_PATH_LEN];
 
 void initShellState() {
     if (getcwd(currentDir, sizeof(currentDir)) == NULL) {
-        perror("Ошибка получения текущего пути");
+        perror("Error retrieving current path");
         strcpy(currentDir, "/");
     }
     strcpy(initialDir, currentDir);
@@ -22,11 +22,11 @@ const char* getCurrentDir() {
 int changeCurrentDir(const char *path) {
     if (chdir(path == NULL ? initialDir : path) == 0) {
         if (getcwd(currentDir, sizeof(currentDir)) == NULL) {
-            perror("Ошибка обновления текущего пути");
+            perror("Error updating current path");
             return -1;
         }
         return 0;
     }
-    perror("Ошибка смены текущего пути");
+    perror("Error changing current path");
     return -1;
 }

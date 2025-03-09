@@ -63,7 +63,7 @@ static int processInput(char *input) {
         command->exec(argc, argv);
     }
     else {
-        printf("команда не найдена, --help для списка команд\n");
+        printf("Command not found, use --help for a list of commands\n");
     }
 
     for (int i = 0; i < argc; i++) {

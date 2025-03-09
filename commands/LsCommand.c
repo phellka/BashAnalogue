@@ -12,14 +12,14 @@ static int compareNames(const void *a, const void *b) {
 }
 
 static void help() {
-    printf("ls: ls [ФАЙЛ]…\n Выдаёт информацию о ФАЙЛАХ (по умолчанию о текущем каталоге).\n");
+    printf("ls: ls [FILE]\n      Displays information about FILE (by default, the current directory).\n");
 }
 
 static char* buildPath(const char *base, const char *subpath) {
     size_t len = strlen(base) + strlen(subpath) + 2;
     char *fullPath = malloc(len);
     if (!fullPath) {
-        perror("Ошибка выделения памяти");
+        perror("Memory allocation error");
         return NULL;
     }
     snprintf(fullPath, len, "%s/%s", base, subpath);
@@ -31,7 +31,7 @@ static void listDirectory(const char *dirPath) {
     DIR *dir = opendir(dirPath);
     
     if (dir == NULL) {
-        perror("Не удалось открыть директорию");
+        perror("Failed to open directory");
         return;
     }
 
@@ -44,13 +44,13 @@ static void listDirectory(const char *dirPath) {
         }
         names = realloc(names, (count + 1) * sizeof(char *));
         if (!names) {
-            perror("Ошибка выделения памяти");
+            perror("Memory allocation error");
             closedir(dir);
             return;
         }
         names[count] = strdup(entry->d_name);
         if (!names[count]) {
-            perror("Ошибка выделения памяти");
+            perror("Memory allocation error");
             closedir(dir);
             return;
         }
@@ -96,7 +96,7 @@ static void exec(int argc, char **argv) {
     }
     
     if (!dirPath) {
-        perror("Ошибка выделения памяти");
+        perror("Memory allocation error");
         return;
     }
 

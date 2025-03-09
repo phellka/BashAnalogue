@@ -20,7 +20,7 @@ void registerCommand(Command *command) {
             commands[commandCount++] = command;
         }
         else {
-            fprintf(stderr, "Превышен лимит команд\n");
+            fprintf(stderr, "Command limit exceeded\n");
         }
     }
 }
@@ -35,7 +35,7 @@ void initCommandsPool() {
 }
 
 void printCommandsList() {
-    printf("Доступные команды:\n");
+    printf("Available commands:\n");
     for (int i = 0; i < commandCount; ++i) {
         printf(" - %s\n", commands[i]->name);
     }

@@ -4,7 +4,7 @@
 
 
 static void help() {
-    printf("cp: cp  [ИСТОЧНИК] [НАЗНАЧЕНИЕ]\n       Копирует ИСТОЧНИК в НАЗНАЧЕНИЕ\n");
+    printf("cp: cp SOURCE DESTINATION\n      Copies SOURCE to DESTINATION\n");
 }
 
 static void exec(int argc, char **argv) {
@@ -13,19 +13,19 @@ static void exec(int argc, char **argv) {
         return;
     }
     if (argc < 3) {
-        printf("Неправильные параметры, --help для справки\n");
+        printf("Invalid parameters, use --help for more information\n");
         return;
     }
 
     FILE *fileInput = fopen(argv[1], "r");
     if (fileInput == NULL) {
-        perror("Ошибка открытия файла");
+        perror("Error opening file");
         return;
     }
 
     FILE *fileOutput = fopen(argv[2], "w");
     if (fileOutput == NULL) {
-        perror("Ошибка открытия файла");
+        perror("Error opening file");
         return;
     }
 

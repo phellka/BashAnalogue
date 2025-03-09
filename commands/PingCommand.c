@@ -20,7 +20,7 @@
 #define ERR_TIMEOUT           1
 
 static void help() {
-    printf("ping: ping [АДРЕС]\n     Отправка ICMP-эхо-запросов на указанный адрес.\n");
+    printf("ping: ping ADDRESS\n      Sends ICMP echo requests to the specified ADDRESS.\n");
 }
 
 typedef struct {
@@ -94,7 +94,7 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
     hints.ai_protocol = IPPROTO_ICMP;
 
     if (getaddrinfo(ip, NULL, &hints, &res) != 0) {
-        printf("Ошибка разрешения хоста: %s\n", ip);
+        printf("Host resolution error: %s\n", ip);
         return ERR_FAILED;
     }
 
@@ -178,7 +178,7 @@ static void exec(int argc, char **argv) {
         return;
     }
     if (argc < 2) {
-        printf("Неправильные параметры, --help для справки\n");
+        printf("Invalid parameters, use --help for more information\n");
         return;
     }
 
