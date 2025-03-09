@@ -21,6 +21,11 @@
 ## Сборка и установка
 ```sh
 sudo apt update
+
+# Установка инструментов сборки
+sudo apt install -y cmake gcc make
+
+# Установка библиотеки readline
 sudo apt install -y libreadline-dev
 
 mkdir build && cd build
