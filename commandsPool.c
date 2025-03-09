@@ -12,11 +12,13 @@
 #define maxCommandsLen 10
 
 static Command *commands[maxCommandsLen];
+static const char *commandsNames[maxCommandsLen];
 static int commandCount = 0;
 
 void registerCommand(Command *command) {
     if (command) {
         if (commandCount < maxCommandsLen) {
+            commandsNames[commandCount] = command->name;
             commands[commandCount++] = command;
         }
         else {
@@ -48,4 +50,8 @@ Command* findCommand(const char* name) {
         }
     }
     return NULL;
+}
+
+const char **getCommandsName() {
+    return commandsNames;
 }

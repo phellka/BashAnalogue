@@ -5,6 +5,6 @@
 
 int main() {
     initCommandManager();
-    runShelll();
+    runShell();
     return 0;
 }

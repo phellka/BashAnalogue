@@ -6,3 +6,4 @@
 void initCommandsPool();
 Command* findCommand(const char* name);
 void printCommandsList();
+const char **getCommandsName();

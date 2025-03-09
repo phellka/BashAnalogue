@@ -10,4 +10,8 @@ list(FILTER SOURCES EXCLUDE REGEX ".*/CMakeFiles/.*")
 file(GLOB_RECURSE HEADERS "${CMAKE_SOURCE_DIR}/*.h")
 list(FILTER HEADERS EXCLUDE REGEX ".*/CMakeFiles/.*")
 
+find_library(READLINE_LIBRARY NAMES readline)
+
 add_executable(main ${SOURCES} ${HEADERS})
+
+target_link_libraries(main PRIVATE ${READLINE_LIBRARY})

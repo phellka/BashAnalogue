@@ -6,9 +6,40 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+
 
 #define MAX_INPUT 256
 #define MAX_ARGS 10
+
+static const char **commands = NULL;
+
+char *commandGenerator(const char *text, int state) {
+    static int index, length;
+    const char *cmd;
+
+    if (state == 0) {
+        index = 0;
+        length = strlen(text);
+    }
+
+    while ((cmd = commands[index++])) {
+        if (strncmp(cmd, text, length) == 0) {
+            return strdup(cmd);
+        }
+    }
+    return NULL;
+}
+
+char **commandCompletion(const char *text, int start, int end) {
+    (void)end;
+    if (start == 0) {
+        return rl_completion_matches(text, commandGenerator);
+    }
+
+    return NULL;
+}
 
 static void parseArguments(const char *input, char *argv[MAX_ARGS], int *argc) {
     *argc = 0;
@@ -46,6 +77,9 @@ static void parseArguments(const char *input, char *argv[MAX_ARGS], int *argc) {
 
 static int processInput(char *input) {
     input[strcspn(input, "\n")] = '\0';
+    if (strcmp(input, "") == 0 || strcmp(input, "\n") == 0) {
+        return 1;
+    }
     if (strcmp(input, "exit") == 0) {
         return 0;
     }
@@ -74,22 +108,31 @@ static int processInput(char *input) {
 
 void initCommandManager() {
     initCommandsPool();
+    commands = getCommandsName();
+    rl_attempted_completion_function = commandCompletion;
     initShellState();
 }
 
-void printPromt() {
-    printf("\033[1;34m>%s: \033[0m", getCurrentDir());
+char *getPrompt() {
+    static char prompt[1024];
+    snprintf(prompt, sizeof(prompt), "\033[1;34m>%s: \033[0m", getCurrentDir());
+    return prompt;
 }
 
-void runShelll() {
-    char input[MAX_INPUT];
+void runShell() {
+    char *input;
     while (1) {
-        printPromt();
-        if (!fgets(input, MAX_INPUT, stdin)) {
-            break;
+        input = readline(getPrompt());
+        if (!input) {
+            continue;
+        }
+        if (*input) {
+            add_history(input);
         }
         if (processInput(input) == 0) {
+            free(input);
             break;
         }
+        free(input);
     }
 }

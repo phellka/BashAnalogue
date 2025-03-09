@@ -1,4 +1,4 @@
 #pragma once
 
 void initCommandManager();
-void runShelll();
+void runShell();
