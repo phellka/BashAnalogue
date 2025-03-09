@@ -4,7 +4,7 @@
 
 
 int main() {
-    initCommandManager();
-    runShell();
+    initCommandManager();  // Инициализация менеджера команд.
+    runShell();            // Запуск оболочки командной строки.
     return 0;
 }

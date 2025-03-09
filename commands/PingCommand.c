@@ -19,21 +19,25 @@
 #define ERR_FAILED            -1
 #define ERR_TIMEOUT           1
 
+// Функция помощи для команды ping
 static void help() {
     printf("ping: ping ADDRESS\n      Sends ICMP echo requests to the specified ADDRESS.\n");
 }
 
+// Структура для пакета ping
 typedef struct {
     struct icmp header;
     char data[PING_PACKET_DATA_SIZE];
 
 } pingPacket;
 
+// Структура для IP-пакета
 typedef struct {
     struct ip ipHeader;
     pingPacket pingPacket;
 } ipPacket;
 
+// Функция для вычисления контрольной суммы
 unsigned short checksum(void *b, int len) {
     unsigned short *buf = b;
     unsigned int sum = 0;
@@ -53,8 +57,7 @@ unsigned short checksum(void *b, int len) {
     return (unsigned short)(~sum);
 }
 
-
-
+// Подготовка пакета ICMP для отправки
 static void prepareIcmpPacker(pingPacket *packet) {
     memset(packet, 0, sizeof(packet));
     srand(time(NULL));
@@ -69,6 +72,7 @@ static void prepareIcmpPacker(pingPacket *packet) {
     packet->header.icmp_cksum = checksum(packet, sizeof(pingPacket));
 }
 
+// Получение текущего времени в миллисекундах
 static unsigned long getCurTimeMs() {
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC, &time);
@@ -76,15 +80,18 @@ static unsigned long getCurTimeMs() {
     return timeMs;
 }
 
+// Функция для выполнения пинга
 int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) {
+    // Проверка входных параметров на корректность
     if (ip == NULL || timeout == 0) {
         return ERR_FAILED;
     }
 
-    pingPacket pingPacket;
-    prepareIcmpPacker(&pingPacket);
-    const unsigned short reply_id = pingPacket.header.icmp_hun.ih_idseq.icd_id;
+    pingPacket pingPacket;                                                      // Структура для пинг-пакета
+    prepareIcmpPacker(&pingPacket);                                             // Подготовка пакета ICMP для отправки
+    const unsigned short reply_id = pingPacket.header.icmp_hun.ih_idseq.icd_id; // ID ответа
 
+    // Настройка структуры для адреса хоста
     struct sockaddr_in toAddr;
     toAddr.sin_family = AF_INET;
     struct addrinfo hints, *res;
@@ -93,6 +100,7 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
     hints.ai_socktype = SOCK_RAW;
     hints.ai_protocol = IPPROTO_ICMP;
 
+    // Разрешение имени хоста в IP-адрес
     if (getaddrinfo(ip, NULL, &hints, &res) != 0) {
         printf("Host resolution error: %s\n", ip);
         return ERR_FAILED;
@@ -101,27 +109,31 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
     struct sockaddr_in *addr = (struct sockaddr_in *)res->ai_addr;
     toAddr.sin_addr = addr->sin_addr;
 
-    freeaddrinfo(res);
+    freeaddrinfo(res); // Освобождаем память, выделенную getaddrinfo
 
-
+    // Создание сокета для отправки ICMP-запросов
     const int sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sock < 0) {
         perror("socket() %s\n");
         return ERR_FAILED;
     }
 
+    // Получаем текущее время для вычисления времени ответа
     const unsigned long start_time_ms = getCurTimeMs();
     const socklen_t sockLen = sizeof(struct sockaddr_in);
+
+    // Отправка ICMP-запроса
     if (sendto(sock, &pingPacket, sizeof(pingPacket), 0, (struct sockaddr*)&toAddr, sockLen) <= 0) {
         close(sock);
         return ERR_FAILED;
     }
 
-    int result = ERR_FAILED;
+    int result = ERR_FAILED;                // Результат выполнения пинга
     struct timeval tv;
-    tv.tv_sec = timeout / 1000;
+    tv.tv_sec = timeout / 1000;             // Устанавливаем таймаут
     tv.tv_usec = (timeout % 1000) * 1000;
 
+    // Ожидание ответа на пинг
     for (;;) {
         fd_set rfd;
         FD_ZERO(&rfd);
@@ -129,15 +141,20 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
 
         int n;
         do {
-            n = select(sock + 1, &rfd, 0, 0, &tv);
+            n = select(sock + 1, &rfd, 0, 0, &tv); // Ожидаем ответа с указанным таймаутом
         } while (n < 0 && errno == EINTR);
+
+        // Если таймаут истек, выходим из цикла
         if (n == 0) {
             result = ERR_TIMEOUT;
             break;
         }
+
         if (n < 0) {
             break;
         }
+
+        // Проверяем, не истекло ли время ответа
         const unsigned long elapsed_time = (getCurTimeMs() - start_time_ms);
         if (elapsed_time > timeout) {
             result = ERR_TIMEOUT;
@@ -148,18 +165,21 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
             tv.tv_usec = (new_timeout % 1000) * 1000;
         }
 
+        // Если получен ответ
         if (FD_ISSET(sock, &rfd)) {
-            ipPacket ipPkt;
+            ipPacket ipPkt; // Структура для IP-пакета
             struct sockaddr_in from_addr;
             socklen_t socklen = sizeof(struct sockaddr_in);
+
+            // Получаем IP-ответ
             if (recvfrom(sock, &ipPkt, sizeof(ipPacket), 0, (struct sockaddr*)&from_addr, &socklen) <= 0) {
                 break;
             }
 
-         
-                
+            // Проверяем, что полученный ответ соответствует отправленному запросу
             if (toAddr.sin_addr.s_addr == from_addr.sin_addr.s_addr
                     && reply_id == ipPkt.pingPacket.header.icmp_hun.ih_idseq.icd_id) {
+                // Если ответ корректный, сохраняем время ответа и выходим
                 if (replyTime != NULL) {
                     *replyTime = elapsed_time;
                 }
@@ -168,10 +188,12 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
             }
         }
     }
-    close(sock);
-    return result;
+    close(sock);    // Закрытие сокета
+    return result;  // Возвращаем результат выполнения пинга
 }
 
+
+// Основная функция выполнения команды ping
 static void exec(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--help") == 0) {
         help();
@@ -192,36 +214,43 @@ static void exec(int argc, char **argv) {
 
     printf("PING %s (%s): %d bytes of data.\n", host, host, PING_PACKET_DATA_SIZE);
 
+    // Пингование 4 раза (PING_NUMBER)
     for (int i = 0; i < PING_NUMBER; ++i) {
-        sentPackets++;
+        sentPackets++; // Увеличиваем количество отправленных пакетов
+        // Отправляем пинг и получаем результат
         const int result = ping(host, timeout, &replyTime);
 
+        // Проверяем результат выполнения пинга
         if (result == ERR_FAILED) {
             printf("Host is not available.\n");
-            break;
+            break; // Выход из цикла, если хост не доступен
         } else {
             if (result == ERR_TIMEOUT) {
                 printf("Request timeout.\n");
             } else {
+                // Если пинг успешен, увеличиваем счетчик полученных пакетов
                 receivedPackets++;
-                totalTime += replyTime;
+                totalTime += replyTime; // Добавляем время ответа к общему времени
                 printf("Reply from %s: time=%lu ms\n", host, replyTime);
             }
         }
-        sleep(1);
+        sleep(1); // Задержка между пингами
     }
 
+    // Вывод статистики пинга
     printf("\n--- %s ping statistics ---\n", host);
     printf("%d packets transmitted, %d received, %.1f%% packet loss\n",
            sentPackets, receivedPackets, 
            ((sentPackets - receivedPackets) / (double)sentPackets) * 100.0);
 
+    // Если получены пакеты, выводим среднее время ответа
     if (receivedPackets > 0) {
         printf("Approximate round trip times: avg = %lu ms\n", totalTime / receivedPackets);
     }
 }
 
 
+// Структура для команды ping
 Command cmd_ping = {
     .name = "ping",
     .exec = exec,

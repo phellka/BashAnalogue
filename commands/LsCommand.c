@@ -6,15 +6,17 @@
 #include <sys/stat.h>
 #include "../shellState.h"
 
-
+// Функция для сортировки имен файлов
 static int compareNames(const void *a, const void *b) {
     return strcasecmp(*(const char **)a, *(const char **)b);
 }
 
+// Функция помощи для команды ls
 static void help() {
     printf("ls: ls [FILE]\n      Displays information about FILE (by default, the current directory).\n");
 }
 
+// Функция для построения полного пути из базового и относительного пути
 static char* buildPath(const char *base, const char *subpath) {
     size_t len = strlen(base) + strlen(subpath) + 2;
     char *fullPath = malloc(len);
@@ -26,6 +28,7 @@ static char* buildPath(const char *base, const char *subpath) {
     return fullPath;
 }
 
+// Функция для отображения содержимого директории
 static void listDirectory(const char *dirPath) {
     struct dirent *entry;
     DIR *dir = opendir(dirPath);
@@ -38,6 +41,7 @@ static void listDirectory(const char *dirPath) {
     char **names = NULL;
     size_t count = 0;
 
+    // Чтение содержимого директории
     while ((entry = readdir(dir)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
@@ -59,14 +63,14 @@ static void listDirectory(const char *dirPath) {
 
     closedir(dir);
 
+    // Сортировка и вывод файлов
     qsort(names, count, sizeof(char *), compareNames);
-
     for (size_t i = 0; i < count; i++) {
         char fullPath[1024];
         snprintf(fullPath, sizeof(fullPath), "%s/%s", dirPath, names[i]);
         struct stat pathStat;
         if (stat(fullPath, &pathStat) == 0 && S_ISDIR(pathStat.st_mode)) {
-            printf("\033[1;34m%s/\033[0m\n", names[i]);
+            printf("\033[1;34m%s/\033[0m\n", names[i]); // Директории выделяем цветом
         } else {
             printf("%s\n", names[i]);
         }
@@ -76,6 +80,7 @@ static void listDirectory(const char *dirPath) {
     free(names);
 }
 
+// Основная функция выполнения команды ls
 static void exec(int argc, char **argv) {
     if (argc > 1 && strcmp(argv[1], "--help") == 0) {
         help();
@@ -104,6 +109,7 @@ static void exec(int argc, char **argv) {
     free(dirPath);
 }
 
+// Структура для команды ls
 Command cmd_ls = {
     .name = "ls",
     .exec = exec,
