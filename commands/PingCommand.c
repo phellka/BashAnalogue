@@ -88,12 +88,15 @@ int ping(const char* ip, const unsigned long timeout, unsigned long* replyTime) 
     }
 
     pingPacket pingPacket;                                                      // Структура для пинг-пакета
+    memset(&pingPacket, 0, sizeof(pingPacket));
     prepareIcmpPacker(&pingPacket);                                             // Подготовка пакета ICMP для отправки
     const unsigned short reply_id = pingPacket.header.icmp_hun.ih_idseq.icd_id; // ID ответа
 
     // Настройка структуры для адреса хоста
     struct sockaddr_in toAddr;
+    memset(&toAddr, 0, sizeof(toAddr));  // Инициализация всех полей нулями
     toAddr.sin_family = AF_INET;
+    toAddr.sin_port = 0;  // Порт не используется для ICMP, поэтому можно установить в 0
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
